@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Agendar Horário • Paula Estefanato</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#f2dfd0",
+                        "outline-variant": "#d4c3be",
+                        "surface": "#faf9f8",
+                        "on-secondary-container": "#706256",
+                        "tertiary": "#735c00",
+                        "surface-container": "#eeeeed",
+                        "surface-variant": "#e3e2e1",
+                        "on-primary-container": "#d4ada1",
+                        "on-secondary-fixed-variant": "#51453a",
+                        "on-tertiary-container": "#4e3d00",
+                        "outline": "#827470",
+                        "secondary": "#695c50",
+                        "tertiary-fixed-dim": "#e9c349",
+                        "tertiary-container": "#cba72f",
+                        "on-surface-variant": "#504441",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#e9e8e7",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#442a22",
+                        "background": "#faf9f8",
+                        "on-background": "#1a1c1c",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#5d4037",
+                        "surface-container-highest": "#e3e2e1",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#faf9f8",
+                        "on-surface": "#1a1c1c",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#f4f3f2",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                    "spacing": { "stack-sm": "8px", "section-gap": "80px", "stack-md": "16px", "margin-mobile": "16px", "gutter": "24px" },
+                    "fontFamily": {
+                        "headline-lg": ["Playfair Display"],
+                        "label-sm": ["Inter"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+        .step { display: none; }
+        .step.active { display: block; }
+        .day-pill.selected, .time-pill.selected, .service-card.selected {
+            border-color: #cba72f;
+            background-color: rgba(203,167,47,0.08);
+        }
+        .spinner {
+            border: 2px solid rgba(68,42,34,0.15);
+            border-top-color: #442a22;
+            border-radius: 50%;
+            width: 18px; height: 18px;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-surface overflow-x-hidden font-body-md">
+<div class="max-w-[480px] mx-auto bg-surface min-h-screen relative shadow-xl">
+<header class="flex items-center gap-3 w-full px-margin-mobile h-16 fixed top-0 z-50 max-w-[480px] bg-surface/90 backdrop-blur-md border-b border-outline-variant/30">
+<button id="backBtn" class="text-primary" aria-label="Voltar">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<span class="text-headline-lg-mobile font-headline-lg-mobile text-primary">Agendar Horário</span>
+</header>
+
+<main class="pt-24 px-margin-mobile pb-16">
+
+  <!-- Progress -->
+  <div class="flex items-center gap-2 mb-8" id="progressBar">
+    <div class="h-1 flex-1 rounded-full bg-tertiary-container step-dot" data-step="1"></div>
+    <div class="h-1 flex-1 rounded-full bg-outline-variant/30 step-dot" data-step="2"></div>
+    <div class="h-1 flex-1 rounded-full bg-outline-variant/30 step-dot" data-step="3"></div>
+    <div class="h-1 flex-1 rounded-full bg-outline-variant/30 step-dot" data-step="4"></div>
+  </div>
+
+  <!-- STEP 1: Serviço -->
+  <section class="step active" data-step="1">
+    <span class="text-label-sm text-tertiary uppercase tracking-[0.3em] block mb-2">Passo 1 de 4</span>
+    <h2 class="text-headline-lg font-headline-lg text-primary mb-6">Escolha o serviço</h2>
+    <div id="servicesList" class="space-y-3">
+      <div class="flex items-center gap-2 text-on-surface-variant text-body-md py-8 justify-center">
+        <div class="spinner"></div> Carregando serviços...
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2: Data -->
+  <section class="step" data-step="2">
+    <span class="text-label-sm text-tertiary uppercase tracking-[0.3em] block mb-2">Passo 2 de 4</span>
+    <h2 class="text-headline-lg font-headline-lg text-primary mb-6">Escolha o dia</h2>
+    <div id="daysList" class="grid grid-cols-3 gap-3"></div>
+  </section>
+
+  <!-- STEP 3: Horário -->
+  <section class="step" data-step="3">
+    <span class="text-label-sm text-tertiary uppercase tracking-[0.3em] block mb-2">Passo 3 de 4</span>
+    <h2 class="text-headline-lg font-headline-lg text-primary mb-6">Escolha o horário</h2>
+    <div id="timesList" class="grid grid-cols-3 gap-3"></div>
+    <p id="noTimesMsg" class="hidden text-body-md text-on-surface-variant text-center py-8">Nenhum horário livre nesse dia. Volte e escolha outra data.</p>
+  </section>
+
+  <!-- STEP 4: Dados -->
+  <section class="step" data-step="4">
+    <span class="text-label-sm text-tertiary uppercase tracking-[0.3em] block mb-2">Passo 4 de 4</span>
+    <h2 class="text-headline-lg font-headline-lg text-primary mb-6">Seus dados</h2>
+
+    <div class="p-6 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 mb-6">
+      <p class="text-[11px] text-on-surface-variant uppercase tracking-widest mb-3">Resumo</p>
+      <div id="summaryBox" class="text-body-md text-primary leading-relaxed"></div>
+    </div>
+
+    <form id="clientForm" class="space-y-4">
+      <div>
+        <label class="text-[11px] text-on-surface-variant uppercase tracking-widest block mb-2">Nome completo</label>
+        <input required id="clientName" type="text" class="w-full px-4 py-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest text-body-md focus:outline-none focus:border-tertiary-container" placeholder="Seu nome"/>
+      </div>
+      <div>
+        <label class="text-[11px] text-on-surface-variant uppercase tracking-widest block mb-2">WhatsApp</label>
+        <input required id="clientPhone" type="tel" class="w-full px-4 py-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest text-body-md focus:outline-none focus:border-tertiary-container" placeholder="(16) 99999-9999"/>
+      </div>
+      <button type="submit" id="confirmBtn" class="w-full bg-primary-container text-on-primary py-4 rounded-full text-label-sm uppercase tracking-[0.2em] shadow-sm hover:shadow-md active:scale-95 transition-all flex items-center justify-center gap-2">
+        Confirmar via WhatsApp
+      </button>
+    </form>
+  </section>
+
+  <!-- STEP 5: Sucesso -->
+  <section class="step" data-step="5">
+    <div class="text-center py-10">
+      <span class="material-symbols-outlined text-tertiary text-4xl mb-4 inline-block" data-icon="check_circle">check_circle</span>
+      <h2 class="text-headline-lg font-headline-lg text-primary mb-4">Pedido enviado!</h2>
+      <p class="text-body-md text-on-surface-variant max-w-[280px] mx-auto mb-8 leading-relaxed">
+        Seu horário foi reservado como <strong>pendente</strong>. Finalize a confirmação com a Paula pelo WhatsApp que abriu agora.
+      </p>
+      <a href="index.html" class="inline-block border border-primary/20 text-primary py-3 px-8 rounded-full text-label-sm uppercase tracking-[0.2em]">Voltar ao início</a>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<script src="js/supabase-config.js"></script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const supabase = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+const cfg = window.SALON_CONFIG;
+
+const state = {
+  step: 1,
+  service: null,
+  date: null, // 'YYYY-MM-DD'
+  dateLabel: null,
+  time: null, // 'HH:MM'
+};
+
+const stepsEl = document.querySelectorAll('.step');
+const dotsEl = document.querySelectorAll('.step-dot');
+
+function goToStep(n) {
+  state.step = n;
+  stepsEl.forEach(s => s.classList.toggle('active', Number(s.dataset.step) === n));
+  dotsEl.forEach(d => d.classList.toggle('bg-tertiary-container', Number(d.dataset.step) <= n && n <= 4));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.getElementById('backBtn').addEventListener('click', () => {
+  if (state.step > 1 && state.step <= 4) {
+    goToStep(state.step - 1);
+  } else {
+    window.location.href = 'index.html';
+  }
+});
+
+// ---------- STEP 1: SERVIÇOS ----------
+async function loadServices() {
+  const { data, error } = await supabase
+    .from('services')
+    .select('*')
+    .eq('active', true)
+    .order('sort_order', { ascending: true });
+
+  const container = document.getElementById('servicesList');
+  if (error || !data || data.length === 0) {
+    container.innerHTML = `<p class="text-body-md text-error text-center py-8">Não foi possível carregar os serviços. Verifique a configuração do Supabase.</p>`;
+    return;
+  }
+
+  container.innerHTML = data.map(s => `
+    <button type="button" class="service-card w-full text-left p-6 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 transition-colors"
+      data-id="${s.id}" data-name="${s.name}" data-price="${s.price}" data-duration="${s.duration_minutes}">
+      <div class="flex justify-between items-start gap-3 mb-2">
+        <h3 class="text-headline-lg font-headline-lg text-primary text-lg flex-1">${s.name}</h3>
+        <span class="text-label-sm text-primary/80 font-semibold whitespace-nowrap pt-1">R$ ${Number(s.price).toFixed(0)}</span>
+      </div>
+      <div class="flex items-center gap-2 text-[10px] text-on-surface-variant uppercase tracking-widest">
+        <span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span>
+        ${s.duration_minutes} MINUTOS
+      </div>
+    </button>
+  `).join('');
+
+  container.querySelectorAll('.service-card').forEach(btn => {
+    btn.addEventListener('click', () => selectService(btn));
+  });
+
+  const preselect = new URLSearchParams(window.location.search).get('servico');
+  if (preselect) {
+    const match = [...container.querySelectorAll('.service-card')]
+      .find(b => b.dataset.name.toLowerCase().includes(preselect.toLowerCase()));
+    if (match) selectService(match);
+  }
+}
+
+function selectService(btn) {
+  document.querySelectorAll('.service-card').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.service = {
+    id: btn.dataset.id,
+    name: btn.dataset.name,
+    price: btn.dataset.price,
+    duration: Number(btn.dataset.duration),
+  };
+  buildDaysList();
+  goToStep(2);
+}
+
+// ---------- STEP 2: DIAS ----------
+const WEEKDAY_LABELS = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+const MONTH_LABELS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+function buildDaysList() {
+  const list = document.getElementById('daysList');
+  list.innerHTML = '';
+  const today = new Date();
+  let added = 0;
+  let offset = 0;
+  while (added < cfg.daysAhead) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + offset);
+    offset++;
+    if (!cfg.openDays.includes(d.getDay())) continue;
+    added++;
+    const iso = d.toISOString().slice(0, 10);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'day-pill p-3 rounded-xl border border-outline-variant/30 bg-surface-container-lowest text-center transition-colors';
+    btn.dataset.date = iso;
+    btn.innerHTML = `
+      <span class="block text-[10px] text-on-surface-variant uppercase tracking-widest">${WEEKDAY_LABELS[d.getDay()]}</span>
+      <span class="block text-primary text-lg font-semibold">${d.getDate()}</span>
+      <span class="block text-[10px] text-on-surface-variant uppercase">${MONTH_LABELS[d.getMonth()]}</span>
+    `;
+    btn.addEventListener('click', async () => {
+      list.querySelectorAll('.day-pill').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.date = iso;
+      state.dateLabel = `${d.getDate()} de ${monthFull(d.getMonth())}`;
+      goToStep(3);
+      await buildTimesList();
+    });
+    list.appendChild(btn);
+  }
+}
+
+function monthFull(i) {
+  return ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][i];
+}
+
+// ---------- STEP 3: HORÁRIOS ----------
+function toMinutes(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+function toHHMM(mins) {
+  const h = Math.floor(mins / 60).toString().padStart(2, '0');
+  const m = (mins % 60).toString().padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+async function buildTimesList() {
+  const list = document.getElementById('timesList');
+  const noTimesMsg = document.getElementById('noTimesMsg');
+  list.innerHTML = `<div class="col-span-3 flex items-center gap-2 text-on-surface-variant text-body-md py-8 justify-center"><div class="spinner"></div> Verificando agenda...</div>`;
+  noTimesMsg.classList.add('hidden');
+
+  const { data: busy, error } = await supabase.rpc('get_busy_slots', { p_date: state.date });
+  if (error) {
+    list.innerHTML = `<p class="col-span-3 text-body-md text-error text-center py-8">Erro ao verificar horários.</p>`;
+    return;
+  }
+
+  const busyIntervals = (busy || []).map(b => [toMinutes(b.start_time.slice(0,5)), toMinutes(b.end_time.slice(0,5))]);
+  const open = toMinutes(cfg.openTime);
+  const close = toMinutes(cfg.closeTime);
+  const duration = state.service.duration;
+  const step = cfg.slotStepMinutes;
+
+  const isToday = state.date === new Date().toISOString().slice(0, 10);
+  const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+
+  const slots = [];
+  for (let t = open; t + duration <= close; t += step) {
+    if (isToday && t <= nowMinutes) continue;
+    const overlaps = busyIntervals.some(([s, e]) => t < e && (t + duration) > s);
+    if (!overlaps) slots.push(t);
+  }
+
+  if (slots.length === 0) {
+    list.innerHTML = '';
+    noTimesMsg.classList.remove('hidden');
+    return;
+  }
+
+  list.innerHTML = slots.map(t => `
+    <button type="button" class="time-pill py-3 rounded-xl border border-outline-variant/30 bg-surface-container-lowest text-primary text-body-md font-medium transition-colors" data-time="${toHHMM(t)}">
+      ${toHHMM(t)}
+    </button>
+  `).join('');
+
+  list.querySelectorAll('.time-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      list.querySelectorAll('.time-pill').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.time = btn.dataset.time;
+      buildSummary();
+      goToStep(4);
+    });
+  });
+}
+
+// ---------- STEP 4: RESUMO + ENVIO ----------
+function buildSummary() {
+  document.getElementById('summaryBox').innerHTML = `
+    <strong>${state.service.name}</strong><br/>
+    ${state.dateLabel} às ${state.time}<br/>
+    R$ ${Number(state.service.price).toFixed(0)} • ${state.service.duration} min
+  `;
+}
+
+document.getElementById('clientForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('confirmBtn');
+  const name = document.getElementById('clientName').value.trim();
+  const phone = document.getElementById('clientPhone').value.trim();
+  if (!name || !phone) return;
+
+  btn.disabled = true;
+  btn.innerHTML = `<div class="spinner" style="border-color: rgba(255,255,255,0.4); border-top-color: #fff;"></div> Enviando...`;
+
+  const startMin = toMinutes(state.time);
+  const endMin = startMin + state.service.duration;
+
+  const { error } = await supabase.from('appointments').insert({
+    service_id: state.service.id,
+    client_name: name,
+    client_phone: phone,
+    appointment_date: state.date,
+    start_time: state.time + ':00',
+    end_time: toHHMM(endMin) + ':00',
+    status: 'pendente',
+  });
+
+  if (error) {
+    btn.disabled = false;
+    btn.textContent = 'Confirmar via WhatsApp';
+    alert('Não foi possível enviar seu agendamento. Tente novamente.');
+    return;
+  }
+
+  const msg = encodeURIComponent(
+    `Olá Paula! Quero agendar:\n` +
+    `Serviço: ${state.service.name}\n` +
+    `Data: ${state.dateLabel}\n` +
+    `Horário: ${state.time}\n` +
+    `Nome: ${name}`
+  );
+  window.open(`https://wa.me/${cfg.whatsappNumber}?text=${msg}`, '_blank');
+
+  goToStep(5);
+});
+
+loadServices();
+</script>
+</body></html>

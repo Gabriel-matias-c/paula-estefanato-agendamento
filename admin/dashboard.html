@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Painel • Paula Estefanato</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: { extend: {
+                colors: {
+                  primary: "#442a22", "primary-container": "#5d4037", surface: "#faf9f8",
+                  "surface-container-low": "#f4f3f2", "surface-container-lowest": "#ffffff",
+                  "on-surface": "#1a1c1c", "on-surface-variant": "#504441", "on-primary": "#ffffff",
+                  "outline-variant": "#d4c3be",
+                  tertiary: "#735c00", "tertiary-container": "#cba72f", error: "#ba1a1a"
+                },
+                fontFamily: {
+                  "headline-lg": ["Playfair Display"], "headline-lg-mobile": ["Playfair Display"],
+                  "label-sm": ["Inter"], "body-md": ["Inter"]
+                },
+                fontSize: {
+                  "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                  "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}],
+                  "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                  "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                },
+                spacing: { "margin-mobile": "16px" }
+            } }
+        }
+    </script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+  .status-pendente { background:#fff3d6; color:#735c00; }
+  .status-confirmado { background:#dff3e3; color:#1e7a34; }
+  .status-cancelado { background:#ffdad6; color:#93000a; }
+</style>
+</head>
+<body class="bg-surface-container-low text-on-surface overflow-x-hidden font-body-md">
+<div class="max-w-[480px] mx-auto bg-surface min-h-screen relative shadow-xl">
+
+<header class="flex items-center justify-between w-full max-w-[480px] left-1/2 -translate-x-1/2 px-margin-mobile h-16 fixed top-0 z-40 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="spa">spa</span>
+<span class="text-headline-lg-mobile font-headline-lg-mobile text-primary text-lg">Agendamentos</span>
+</div>
+<button id="logoutBtn" class="text-[11px] uppercase tracking-widest text-on-surface-variant">Sair</button>
+</header>
+
+<main class="pt-24 px-margin-mobile pb-16">
+
+  <div class="flex items-center justify-between mb-6 gap-3">
+    <button id="prevDay" class="w-10 h-10 rounded-full bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-center active:scale-90 transition-transform">
+      <span class="material-symbols-outlined text-primary text-lg" data-icon="chevron_left">chevron_left</span>
+    </button>
+    <div class="flex-1 text-center">
+      <p id="dateLabel" class="text-headline-lg-mobile font-headline-lg-mobile text-primary text-lg"></p>
+    </div>
+    <button id="nextDay" class="w-10 h-10 rounded-full bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-center active:scale-90 transition-transform">
+      <span class="material-symbols-outlined text-primary text-lg" data-icon="chevron_right">chevron_right</span>
+    </button>
+  </div>
+
+  <div class="flex gap-2 mb-6">
+    <button id="todayBtn" class="text-[11px] uppercase tracking-widest px-4 py-2 rounded-full border border-outline-variant/30 bg-surface-container-lowest">Hoje</button>
+    <button id="blockBtn" class="text-[11px] uppercase tracking-widest px-4 py-2 rounded-full border border-outline-variant/30 bg-surface-container-lowest ml-auto">+ Bloquear horário</button>
+  </div>
+
+  <div id="list" class="space-y-3"></div>
+  <p id="emptyMsg" class="hidden text-center text-on-surface-variant text-body-md py-10">Nenhum agendamento nesse dia.</p>
+</main>
+</div>
+
+<!-- Modal bloquear horário -->
+<div id="blockModal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-end justify-center">
+  <div class="bg-surface w-full max-w-[480px] rounded-t-2xl p-6">
+    <h3 class="text-headline-lg-mobile font-headline-lg-mobile text-primary text-lg mb-4">Bloquear horário</h3>
+    <form id="blockForm" class="space-y-3">
+      <div>
+        <label class="text-[11px] text-on-surface-variant uppercase tracking-widest block mb-1">Data</label>
+        <input required id="blockDate" type="date" class="w-full px-3 py-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest" />
+      </div>
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label class="text-[11px] text-on-surface-variant uppercase tracking-widest block mb-1">Início</label>
+          <input required id="blockStart" type="time" class="w-full px-3 py-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest" />
+        </div>
+        <div class="flex-1">
+          <label class="text-[11px] text-on-surface-variant uppercase tracking-widest block mb-1">Fim</label>
+          <input required id="blockEnd" type="time" class="w-full px-3 py-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest" />
+        </div>
+      </div>
+      <div>
+        <label class="text-[11px] text-on-surface-variant uppercase tracking-widest block mb-1">Motivo (opcional)</label>
+        <input id="blockReason" type="text" placeholder="Almoço, folga..." class="w-full px-3 py-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest" />
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" id="blockCancelBtn" class="flex-1 py-3 rounded-full border border-outline-variant/40 text-[11px] uppercase tracking-widest">Cancelar</button>
+        <button type="submit" class="flex-1 py-3 rounded-full bg-primary-container text-on-primary text-[11px] uppercase tracking-widest">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/supabase-config.js"></script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const supabase = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+
+const { data: { session } } = await supabase.auth.getSession();
+if (!session) window.location.href = '/admin/index.html';
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  window.location.href = '/admin/index.html';
+});
+
+let currentDate = new Date();
+
+const WEEKDAY_FULL = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const MONTH_LABELS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+function isoDate(d) { return d.toISOString().slice(0, 10); }
+
+function renderDateLabel() {
+  document.getElementById('dateLabel').textContent =
+    `${WEEKDAY_FULL[currentDate.getDay()]}, ${currentDate.getDate()} ${MONTH_LABELS[currentDate.getMonth()]}`;
+}
+
+async function loadAppointments() {
+  const list = document.getElementById('list');
+  const emptyMsg = document.getElementById('emptyMsg');
+  list.innerHTML = `<p class="text-center text-on-surface-variant text-body-md py-10">Carregando...</p>`;
+  emptyMsg.classList.add('hidden');
+
+  const dateStr = isoDate(currentDate);
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('*, services(name, price, duration_minutes)')
+    .eq('appointment_date', dateStr)
+    .order('start_time', { ascending: true });
+
+  if (error) {
+    list.innerHTML = `<p class="text-center text-error text-body-md py-10">Erro ao carregar agendamentos.</p>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.innerHTML = '';
+    emptyMsg.classList.remove('hidden');
+    return;
+  }
+
+  list.innerHTML = data.map(a => `
+    <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/20 p-5">
+      <div class="flex justify-between items-start gap-3 mb-2">
+        <div class="flex-1">
+          <p class="text-headline-lg-mobile font-headline-lg-mobile text-primary text-base">${a.start_time.slice(0,5)} — ${a.client_name}</p>
+          <p class="text-[13px] text-on-surface-variant mt-0.5">${a.services?.name ?? 'Serviço'} • R$ ${Number(a.services?.price ?? 0).toFixed(0)}</p>
+          <a class="text-[13px] text-primary underline" href="https://wa.me/${a.client_phone.replace(/\D/g,'')}" target="_blank">${a.client_phone}</a>
+        </div>
+        <span class="text-[10px] uppercase tracking-widest px-2 py-1 rounded-full shrink-0 whitespace-nowrap status-${a.status}">${a.status}</span>
+      </div>
+      <div class="flex gap-2 mt-3">
+        ${a.status !== 'confirmado' ? `<button data-id="${a.id}" data-action="confirmado" data-phone="${a.client_phone}" data-name="${a.client_name}" data-service="${a.services?.name ?? 'seu horário'}" data-time="${a.start_time.slice(0,5)}" class="statusBtn flex-1 py-2 rounded-full border border-outline-variant/40 text-[11px] uppercase tracking-widest">Confirmar</button>` : ''}
+        ${a.status !== 'cancelado' ? `<button data-id="${a.id}" data-action="cancelado" class="statusBtn flex-1 py-2 rounded-full border border-outline-variant/40 text-[11px] uppercase tracking-widest text-error">Cancelar</button>` : ''}
+        <button data-id="${a.id}" class="deleteBtn w-11 shrink-0 py-2 rounded-full border border-outline-variant/40 text-error flex items-center justify-center" aria-label="Excluir">
+          <span class="material-symbols-outlined text-lg" data-icon="delete">delete</span>
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.statusBtn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      const { error } = await supabase.from('appointments').update({ status: btn.dataset.action }).eq('id', btn.dataset.id);
+
+      if (!error && btn.dataset.action === 'confirmado') {
+        const dateLabel = document.getElementById('dateLabel').textContent;
+        const msg = encodeURIComponent(
+          `Olá ${btn.dataset.name}! Seu horário está confirmado ✅\n` +
+          `Serviço: ${btn.dataset.service}\n` +
+          `Data: ${dateLabel}\n` +
+          `Horário: ${btn.dataset.time}\n` +
+          `Te espero por aqui!`
+        );
+        window.open(`https://wa.me/${btn.dataset.phone.replace(/\D/g,'')}?text=${msg}`, '_blank');
+      }
+
+      loadAppointments();
+    });
+  });
+
+  list.querySelectorAll('.deleteBtn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Excluir esse agendamento definitivamente? Essa ação não pode ser desfeita.')) return;
+      btn.disabled = true;
+      await supabase.from('appointments').delete().eq('id', btn.dataset.id);
+      loadAppointments();
+    });
+  });
+}
+
+document.getElementById('prevDay').addEventListener('click', () => {
+  currentDate.setDate(currentDate.getDate() - 1);
+  renderDateLabel();
+  loadAppointments();
+});
+document.getElementById('nextDay').addEventListener('click', () => {
+  currentDate.setDate(currentDate.getDate() + 1);
+  renderDateLabel();
+  loadAppointments();
+});
+document.getElementById('todayBtn').addEventListener('click', () => {
+  currentDate = new Date();
+  renderDateLabel();
+  loadAppointments();
+});
+
+// Bloquear horário
+const blockModal = document.getElementById('blockModal');
+document.getElementById('blockBtn').addEventListener('click', () => {
+  document.getElementById('blockDate').value = isoDate(currentDate);
+  blockModal.classList.remove('hidden');
+});
+document.getElementById('blockCancelBtn').addEventListener('click', () => blockModal.classList.add('hidden'));
+
+document.getElementById('blockForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const { error } = await supabase.from('blocked_slots').insert({
+    block_date: document.getElementById('blockDate').value,
+    start_time: document.getElementById('blockStart').value + ':00',
+    end_time: document.getElementById('blockEnd').value + ':00',
+    reason: document.getElementById('blockReason').value || null,
+  });
+  if (error) {
+    alert('Não foi possível bloquear o horário.');
+    return;
+  }
+  blockModal.classList.add('hidden');
+  e.target.reset();
+  loadAppointments();
+});
+
+renderDateLabel();
+loadAppointments();
+</script>
+</body></html>
